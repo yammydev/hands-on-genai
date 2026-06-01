@@ -1,0 +1,9 @@
+name: Local Config
+version: 1.0.0
+schema: v1
+models:
+  - name: Gemma4
+    provider: openai
+    model: gemma4:e2b
+    apiBase: http://localhost:11434/v1
+    apiKey: dummy
