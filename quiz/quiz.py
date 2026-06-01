@@ -135,7 +135,15 @@ def run_quiz() -> None:
 
 
 def main() -> int:
-    pass
+    try:
+        run_quiz()
+        return 0
+    except RuntimeError as exc:
+        print(f"エラー: {exc}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\n中断しました。", file=sys.stderr)
+        return 130
 
 
 if __name__ == "__main__":
