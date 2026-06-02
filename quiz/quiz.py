@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import random
 import string
 import sys
 import urllib.error
@@ -12,6 +13,70 @@ from dataclasses import dataclass
 
 OLLAMA_API_URL = "http://localhost:11434/api/chat"
 OLLAMA_MODEL = "gemma4:e2b"
+
+QUIZ_GENRES = [
+    "日本史",
+    "世界史",
+    "地理",
+    "科学",
+    "生物",
+    "化学",
+    "物理",
+    "天文学",
+    "数学",
+    "統計",
+    "言語",
+    "文学",
+    "漢字",
+    "英語",
+    "ことわざ",
+    "四字熟語",
+    "日本文化",
+    "世界文化",
+    "宗教",
+    "哲学",
+    "心理学",
+    "経済",
+    "政治",
+    "法律",
+    "国際関係",
+    "IT",
+    "プログラミング",
+    "インターネット",
+    "セキュリティ",
+    "AI",
+    "スポーツ",
+    "オリンピック",
+    "野球",
+    "サッカー",
+    "健康",
+    "医療",
+    "栄養",
+    "料理",
+    "食文化",
+    "音楽",
+    "映画",
+    "アニメ",
+    "ゲーム",
+    "美術",
+    "建築",
+    "乗り物",
+    "気象",
+    "環境",
+    "動物",
+    "植物",
+]
+
+QUESTION_STYLES = [
+    "定義を問う問題",
+    "比較する問題",
+    "原因を問う問題",
+    "結果を問う問題",
+    "年代を問う問題",
+    "人物を問う問題",
+    "用語の意味を問う問題",
+    "正しい記述を選ぶ問題",
+]
 
 
 @dataclass
@@ -24,9 +89,15 @@ class Quiz:
 
 def request_quiz_from_ollama() -> Quiz:
     """Generate one common-sense 4-choice quiz via Ollama and parse it."""
+    selected_genre = random.choice(QUIZ_GENRES)
+    selected_style = random.choice(QUESTION_STYLES)
+
     prompt = (
         "あなたはクイズ作成AIです。\n"
         "常識クイズを1問だけ作ってください。\n"
+        f"ジャンル: {selected_genre}\n"
+        f"出題スタイル: {selected_style}\n"
+        "上記のジャンルと出題スタイルに従って、毎回題材を変えてください。\n"
         "以下のJSONだけを出力してください（他の文字は不要）。\n"
         "{\n"
         '  "question": "問題文",\n'
