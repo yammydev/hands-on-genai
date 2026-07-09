@@ -87,7 +87,14 @@ class Quiz:
     explanation: str
 
 
-def request_quiz_from_ollama() -> Quiz:
+@dataclass
+class OllamaStats:
+    elapsed_sec: float
+    eval_count: int
+    tokens_per_sec: float
+
+
+def request_quiz_from_ollama() -> tuple[Quiz, OllamaStats]:
     """Generate one common-sense 4-choice quiz via Ollama and parse it."""
     selected_genre = random.choice(QUIZ_GENRES)
     selected_style = random.choice(QUESTION_STYLES)
@@ -146,12 +153,25 @@ def request_quiz_from_ollama() -> Quiz:
 
     validate_quiz_data(quiz_data)
 
+    total_duration_ns = response_data.get("total_duration", 0)
+    eval_count = response_data.get("eval_count", 0)
+    eval_duration_ns = response_data.get("eval_duration", 0)
+
+    elapsed_sec = total_duration_ns / 1e9
+    tokens_per_sec = eval_count / (eval_duration_ns / 1e9) if eval_duration_ns > 0 else 0.0
+
+    stats = OllamaStats(
+        elapsed_sec=elapsed_sec,
+        eval_count=eval_count,
+        tokens_per_sec=tokens_per_sec,
+    )
+
     return Quiz(
         question=quiz_data["question"],
         choices=quiz_data["choices"],
         answer_index=quiz_data["answer_index"],
         explanation=quiz_data["explanation"],
-    )
+    ), stats
 
 
 def validate_quiz_data(data: dict) -> None:
@@ -184,12 +204,14 @@ def run_quiz() -> None:
     print("=== 常識クイズゲーム ===")
     print("クイズを生成中です...\n")
 
-    quiz = request_quiz_from_ollama()
+    quiz, stats = request_quiz_from_ollama()
 
     print(f"問題: {quiz.question}")
     for i, choice in enumerate(quiz.choices):
         label = string.ascii_uppercase[i]
         print(f"  {label}. {choice}")
+
+    print(f"\n[応答時間: {stats.elapsed_sec:.2f}秒 / トークン数: {stats.eval_count} / 速度: {stats.tokens_per_sec:.1f} tokens/sec]\n")
 
     user_answer_index = get_user_answer()
     correct = user_answer_index == quiz.answer_index
